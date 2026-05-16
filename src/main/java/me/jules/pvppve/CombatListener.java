@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -52,6 +53,16 @@ public class CombatListener implements Listener {
         Player player = event.getPlayer();
         if (combatManager.isInCombat(player)) {
             player.setHealth(0); // Kill player on logout
+            // exitCombat will be called by onDeath if health is set to 0,
+            // but for safety we call it here too if death event doesn't trigger immediately
+            combatManager.exitCombat(player);
+        }
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        if (combatManager.isInCombat(player)) {
             combatManager.exitCombat(player);
         }
     }

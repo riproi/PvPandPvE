@@ -3,6 +3,7 @@ package me.jules.pvppve;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -58,9 +59,17 @@ public class CompassManager {
 
         targets.put(hunter.getUniqueId(), victim.getUniqueId());
         cooldowns.put(hunter.getUniqueId(), now);
-        hunter.setCompassTarget(victim.getLocation());
+        updateTracking(hunter, victim);
         hunter.sendMessage(mm.deserialize(plugin.getConfig().getString("messages.target-set").replace("{player}", victim.getName())));
         hunter.closeInventory();
+    }
+
+    private void updateTracking(Player hunter, Player victim) {
+        Location loc = victim.getLocation();
+        hunter.setCompassTarget(loc);
+        String actionbarText = String.format("<gold>Цель: <white>%s <gray>(%d, %d, %d)",
+                victim.getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        hunter.sendActionBar(mm.deserialize(actionbarText));
     }
 
     private String formatTime(long ms) {
@@ -82,9 +91,7 @@ public class CompassManager {
                     Player victim = Bukkit.getPlayer(victimId);
 
                     if (victim != null && victim.isOnline() && playerManager.getMode(victim) == PlayerMode.PVP) {
-                        hunter.setCompassTarget(victim.getLocation());
-                    } else {
-                        // Victim offline or changed mode? Maybe reset?
+                        updateTracking(hunter, victim);
                     }
                 }
             }

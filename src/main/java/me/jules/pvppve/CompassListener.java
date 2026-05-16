@@ -9,6 +9,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -63,9 +64,15 @@ public class CompassListener implements Listener {
         }
 
         // Protect compass from moving
-        if (isTrackingCompass(event.getCurrentItem()) || isTrackingCompass(event.getCursor()) || event.getSlot() == 8) {
-            if (playerManager.getMode((Player) event.getWhoClicked()) != PlayerMode.NONE) {
-                 event.setCancelled(true);
+        if (isTrackingCompass(event.getCurrentItem()) || isTrackingCompass(event.getCursor())) {
+             event.setCancelled(true);
+             return;
+        }
+
+        // Block interaction with slot 8 if it contains the compass (in player inventory)
+        if (event.getSlot() == 8 && event.getClickedInventory() != null && event.getClickedInventory().getType() == InventoryType.PLAYER) {
+            if (isTrackingCompass(event.getClickedInventory().getItem(8))) {
+                event.setCancelled(true);
             }
         }
     }
@@ -95,7 +102,6 @@ public class CompassListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         compassManager.removeHunter(event.getPlayer());
-        // Clean up compass on quit is handled by removing from inventory usually, but we want to be sure
         event.getPlayer().getInventory().remove(Material.COMPASS);
     }
 }

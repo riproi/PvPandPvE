@@ -1,6 +1,0 @@
-name: PvpPvePlugin
-version: 1.0
-main: me.jules.pvppve.PvpPvePlugin
-api-version: 1.21
-author: Jules
-description: Plugin for PVP/PVE modes and Combat Log

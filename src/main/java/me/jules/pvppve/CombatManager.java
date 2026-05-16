@@ -14,15 +14,19 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CombatManager {
     private final PvpPvePlugin plugin;
     private final MiniMessage mm = MiniMessage.miniMessage();
-    private final HashMap<UUID, Long> combatTimers = new HashMap<>();
-    private final HashMap<UUID, UUID> opponents = new HashMap<>();
-    private final HashMap<UUID, BossBar> bossBars = new HashMap<>();
-    private final HashMap<UUID, Scoreboard> oldScoreboards = new HashMap<>();
+    private final Map<UUID, Long> combatTimers = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> opponents = new ConcurrentHashMap<>();
+    private final Map<UUID, BossBar> bossBars = new ConcurrentHashMap<>();
+    private final Map<UUID, Scoreboard> oldScoreboards = new ConcurrentHashMap<>();
 
     public CombatManager(PvpPvePlugin plugin) {
         this.plugin = plugin;
@@ -46,7 +50,6 @@ public class CombatManager {
             setupBossBar(player);
             setupScoreboard(player, opponent);
         }
-        // Scoreboard and BossBar are updated in the task
     }
 
     private void setupBossBar(Player player) {
@@ -87,17 +90,15 @@ public class CombatManager {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             long now = System.currentTimeMillis();
             int combatTimeLimit = plugin.getConfig().getInt("combat-time", 30) * 1000;
+            Set<UUID> toRemove = new HashSet<>();
 
-            combatTimers.entrySet().removeIf(entry -> {
+            for (Map.Entry<UUID, Long> entry : combatTimers.entrySet()) {
                 UUID uuid = entry.getKey();
                 Player player = Bukkit.getPlayer(uuid);
                 long elapsed = now - entry.getValue();
 
                 if (elapsed > combatTimeLimit) {
-                    if (player != null && player.isOnline()) {
-                        exitCombat(player);
-                    }
-                    return true;
+                    toRemove.add(uuid);
                 } else {
                     if (player != null && player.isOnline()) {
                         updateBossBar(player, (combatTimeLimit - elapsed) / 1000);
@@ -106,9 +107,21 @@ public class CombatManager {
                              updateScoreboard(player, opponent);
                         }
                     }
-                    return false;
                 }
-            });
+            }
+
+            for (UUID uuid : toRemove) {
+                Player player = Bukkit.getPlayer(uuid);
+                if (player != null && player.isOnline()) {
+                    exitCombatInternal(player);
+                } else {
+                    // Clean up memory if player offline
+                    combatTimers.remove(uuid);
+                    opponents.remove(uuid);
+                    bossBars.remove(uuid);
+                    oldScoreboards.remove(uuid);
+                }
+            }
         }, 20L, 20L);
     }
 
@@ -123,12 +136,30 @@ public class CombatManager {
     }
 
     public void exitCombat(Player player) {
+        UUID opponentId = opponents.get(player.getUniqueId());
+        exitCombatInternal(player);
+
+        // If this method was called (e.g. because of death/quit), we also end combat for the opponent
+        if (opponentId != null) {
+            Player opponent = Bukkit.getPlayer(opponentId);
+            if (opponent != null && opponent.isOnline() && isInCombat(opponent)) {
+                // Only if they are fighting each other
+                if (player.getUniqueId().equals(opponents.get(opponent.getUniqueId()))) {
+                    exitCombatInternal(opponent);
+                }
+            }
+        }
+    }
+
+    private void exitCombatInternal(Player player) {
         combatTimers.remove(player.getUniqueId());
         opponents.remove(player.getUniqueId());
+
         BossBar bar = bossBars.remove(player.getUniqueId());
         if (bar != null) {
             player.hideBossBar(bar);
         }
+
         Scoreboard old = oldScoreboards.remove(player.getUniqueId());
         if (old != null) {
             player.setScoreboard(old);
