@@ -1,0 +1,52 @@
+# Время режима боя в секундах
+combat-time: 30
+
+# Список заблокированных команд во время боя
+blocked-commands:
+  - "/spawn"
+  - "/home"
+  - "/tp"
+  - "/tpa"
+  - "/tpaccept"
+  - "/tpdeny"
+  - "/warp"
+  - "/call"
+  - "/pay"
+  - "/ec"
+  - "/enderchest"
+  - "/feed"
+  - "/heal"
+  - "/grave"
+
+messages:
+  combat-started-chat: "<red>Вы вступили в бой!"
+  combat-started-title: "<red>Режим боя"
+  combat-started-subtitle: "<gray>Вы начали пвп с <white>{player}"
+  bossbar-text: "<red>До окончания: <white>{time} <red>секунд"
+  command-blocked: "<red>Эта команда заблокирована во время боя!"
+  enderchest-blocked: "<red>Вы не можете открывать Эндер-сундук во время боя!"
+  cooldown-wait: "<red>Вы сможете сменить цель только через {time}"
+  target-set: "<green>Цель установлена: <white>{player}"
+  mode-pve-selected: "<green>Вы выбрали мирный режим (PVE)."
+  mode-pvp-selected: "<red>Вы выбрали боевой режим (PVP)."
+  cannot-damage-pve: "<red>Вы не можете наносить урон игрокам в режиме PVE!"
+  pve-cannot-damage: "<red>В режиме PVE вы не можете наносить урон другим игрокам!"
+
+gui:
+  selection-title: "Выберите режим игры"
+  pvp-item:
+    name: "<red>Боевой режим (PVP)"
+    lore:
+      - "<gray>Обычное выживание"
+      - "<gray>с возможностью драться"
+  pve-item:
+    name: "<green>Мирный режим (PVE)"
+    lore:
+      - "<gray>Вы не сможете драться,"
+      - "<gray>но и вас никто не тронет"
+  heads-title: "Выберите цель для охоты"
+
+items:
+  compass-name: "<gold>Компас охотника"
+  compass-lore:
+    - "<gray>ПКМ, чтобы выбрать цель"

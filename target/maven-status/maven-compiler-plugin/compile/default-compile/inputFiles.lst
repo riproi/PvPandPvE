@@ -1,0 +1,9 @@
+/app/src/main/java/me/jules/pvppve/CombatListener.java
+/app/src/main/java/me/jules/pvppve/CombatManager.java
+/app/src/main/java/me/jules/pvppve/CompassListener.java
+/app/src/main/java/me/jules/pvppve/CompassManager.java
+/app/src/main/java/me/jules/pvppve/DamageListener.java
+/app/src/main/java/me/jules/pvppve/ModeListener.java
+/app/src/main/java/me/jules/pvppve/PlayerManager.java
+/app/src/main/java/me/jules/pvppve/PlayerMode.java
+/app/src/main/java/me/jules/pvppve/PvpPvePlugin.java
